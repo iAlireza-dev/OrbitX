@@ -11,3 +11,72 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum CustomerStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String         @unique
+  phone     String?
+  status    CustomerStatus @default(ACTIVE)
+
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Plan {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  monthlyPrice Decimal    @db.Decimal(10, 2)
+  status       PlanStatus @default(ACTIVE)
+
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id String @id @default(cuid())
+
+  customerId String
+  planId     String
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  plan     Plan     @relation(fields: [planId], references: [id])
+
+  status       SubscriptionStatus @default(PENDING)
+  monthlyPrice Decimal            @db.Decimal(10, 2)
+
+  startedAt  DateTime
+  endedAt    DateTime?
+  billingDay Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([planId])
+}
