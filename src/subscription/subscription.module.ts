@@ -8,5 +8,6 @@ import { Module } from '@nestjs/common';
   imports: [CustomerModule, PlanModule],
   controllers: [SubscriptionController],
   providers: [SubscriptionService],
+  exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

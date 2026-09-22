@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CustomerService } from '../customer/customer.service.js';
 import { PlanService } from '../plan/plan.service.js';
@@ -34,5 +38,17 @@ export class SubscriptionService {
         monthlyPrice: plan.monthlyPrice,
       },
     });
+  }
+
+  async findById(id: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Subscription with ID ${id} not found`);
+    }
+
+    return subscription;
   }
 }

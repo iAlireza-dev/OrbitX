@@ -31,6 +31,18 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+enum SimType {
+  PHYSICAL
+  ESIM
+}
+
+enum SimStatus {
+  AVAILABLE
+  ACTIVE
+  SUSPENDED
+  RETIRED
+}
+
 model Customer {
   id        String         @id @default(cuid())
   firstName String
@@ -76,7 +88,26 @@ model Subscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  sim       Sim?
 
   @@index([customerId])
   @@index([planId])
+}
+
+model Sim {
+  id String @id @default(cuid())
+
+  iccid  String  @unique
+  msisdn String? @unique
+
+  type   SimType
+  status SimStatus @default(AVAILABLE)
+
+  subscriptionId String?       @unique
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  activatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
