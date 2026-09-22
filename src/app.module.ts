@@ -1,3 +1,4 @@
+import { SubscriptionModule } from './subscription/subscription.module.js';
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
@@ -8,6 +9,7 @@ import { PlanModule } from './plan/plan.module.js';
 
 @Module({
   imports: [
+    SubscriptionModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
