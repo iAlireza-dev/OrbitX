@@ -10,6 +10,7 @@ import { SimModule } from './sim/sim.module.js';
 import { AllowanceModule } from './allowance/allowance.module.js';
 import { UsageModule } from './usage/usage.module.js';
 import { BullModule } from '@nestjs/bullmq';
+import { AllocationModule } from './allocation/allocation.module.js';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BullModule } from '@nestjs/bullmq';
         },
       }),
     }),
+    AllocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
