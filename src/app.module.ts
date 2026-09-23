@@ -1,5 +1,5 @@
 import { SubscriptionModule } from './subscription/subscription.module.js';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -8,6 +8,8 @@ import { CustomerModule } from './customer/customer.module.js';
 import { PlanModule } from './plan/plan.module.js';
 import { SimModule } from './sim/sim.module.js';
 import { AllowanceModule } from './allowance/allowance.module.js';
+import { UsageModule } from './usage/usage.module.js';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -20,6 +22,20 @@ import { AllowanceModule } from './allowance/allowance.module.js';
     PlanModule,
     SimModule,
     AllowanceModule,
+    UsageModule,
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.getOrThrow<string>('REDIS_HOST'),
+          port: Number(configService.getOrThrow<string>('REDIS_PORT')),
+          username: configService.get<string>('REDIS_USERNAME') || undefined,
+          password: configService.get<string>('REDIS_PASSWORD') || undefined,
+          tls:
+            configService.get<string>('REDIS_TLS') === 'true' ? {} : undefined,
+        },
+      }),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
