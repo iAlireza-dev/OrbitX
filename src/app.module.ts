@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { CustomerModule } from './customer/customer.module.js';
 import { PlanModule } from './plan/plan.module.js';
 import { SimModule } from './sim/sim.module.js';
+import { AllowanceModule } from './allowance/allowance.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SimModule } from './sim/sim.module.js';
     CustomerModule,
     PlanModule,
     SimModule,
+    AllowanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
