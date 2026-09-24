@@ -1,3 +1,4 @@
+import { RedisModule } from './redis/redis.module.js';
 import { SubscriptionModule } from './subscription/subscription.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { OutboxModule } from './outbox/outbox.module.js';
 
 @Module({
   imports: [
+    RedisModule,
     SubscriptionModule,
     ConfigModule.forRoot({
       isGlobal: true,

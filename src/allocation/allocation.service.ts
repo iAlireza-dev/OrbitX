@@ -10,13 +10,17 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service.js';
+import { RedisService } from '../redis/redis.service.js';
 
 @Injectable()
 export class AllocationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async processUsageEvent(usageEventId: string) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const usageEvent = await tx.usageEvent.findUnique({
         where: {
           id: usageEventId,
@@ -164,5 +168,12 @@ export class AllocationService {
         },
       });
     });
+    if (result) {
+      const cacheKey = `subscription:${result.subscriptionId}: usage-summary`;
+      try {
+        await this.redisService.del(cacheKey);
+      } catch {}
+    }
+    return result;
   }
 }

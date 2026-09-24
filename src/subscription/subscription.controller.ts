@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service.js';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto.js';
 
@@ -9,5 +9,10 @@ export class SubscriptionController {
   @Post()
   createSubscription(@Body() data: CreateSubscriptionDto) {
     return this.subscriptionService.create(data);
+  }
+
+  @Get(':id/usage-summary')
+  getUsageSummary(@Param('id') id: string) {
+    return this.subscriptionService.getUsageSummary(id);
   }
 }

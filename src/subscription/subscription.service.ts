@@ -7,13 +7,15 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CustomerService } from '../customer/customer.service.js';
 import { PlanService } from '../plan/plan.service.js';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto.js';
-
+import { AllowanceStatus, UsageType } from '../generated/prisma/enums.js';
+import { RedisService } from '../redis/redis.service.js';
 @Injectable()
 export class SubscriptionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly customerService: CustomerService,
     private readonly planService: PlanService,
+    private readonly redisService: RedisService,
   ) {}
 
   async create(dto: CreateSubscriptionDto) {
@@ -50,5 +52,84 @@ export class SubscriptionService {
     }
 
     return subscription;
+  }
+
+  async getUsageSummary(id: string) {
+    const cacheKey = `subscription:${id}:usage-summary`;
+
+    const cachedSummary =
+      await this.redisService.get<Record<string, unknown>>(cacheKey);
+
+    if (cachedSummary) {
+      return cachedSummary;
+    }
+
+    await this.findById(id);
+
+    const now = new Date();
+
+    const allowances = await this.prisma.allowance.findMany({
+      where: {
+        subscriptionId: id,
+        status: {
+          in: [AllowanceStatus.ACTIVE, AllowanceStatus.EXHAUSTED],
+        },
+        startsAt: {
+          lte: now,
+        },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      },
+    });
+
+    const summary = {
+      [UsageType.DATA]: {
+        total: 0,
+        remaining: 0,
+      },
+      [UsageType.VOICE]: {
+        total: 0,
+        remaining: 0,
+      },
+      [UsageType.SMS]: {
+        total: 0,
+        remaining: 0,
+      },
+    };
+
+    for (const allowance of allowances) {
+      const usage = summary[allowance.usageType];
+
+      usage.total += allowance.totalAmount;
+      usage.remaining += allowance.remainingAmount;
+    }
+
+    const usageSummary = {
+      subscriptionId: id,
+
+      data: {
+        total: summary.DATA.total,
+        used: summary.DATA.total - summary.DATA.remaining,
+        remaining: summary.DATA.remaining,
+        unit: 'MB',
+      },
+
+      voice: {
+        total: summary.VOICE.total,
+        used: summary.VOICE.total - summary.VOICE.remaining,
+        remaining: summary.VOICE.remaining,
+        unit: 'SECONDS',
+      },
+
+      sms: {
+        total: summary.SMS.total,
+        used: summary.SMS.total - summary.SMS.remaining,
+        remaining: summary.SMS.remaining,
+        unit: 'COUNT',
+      },
+    };
+
+    await this.redisService.set(cacheKey, usageSummary, 60);
+
+    return usageSummary;
   }
 }
