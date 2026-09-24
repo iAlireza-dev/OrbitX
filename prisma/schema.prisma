@@ -64,6 +64,17 @@ enum AllowanceStatus {
   EXPIRED
 }
 
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PUBLISHED
+  FAILED
+}
+
+enum OutboxEventType {
+  USAGE_EVENT_RECEIVED
+}
+
 model Customer {
   id        String         @id @default(cuid())
   firstName String
@@ -206,4 +217,27 @@ model Allocation {
 
   @@unique([usageEventId, allowanceId])
   @@index([allowanceId])
+}
+
+model OutboxEvent {
+  id          String          @id @default(cuid())
+  type        OutboxEventType
+  aggregateId String
+  payload     Json
+
+  status      OutboxStatus @default(PENDING)
+  attempts    Int          @default(0)
+  availableAt DateTime     @default(now())
+
+  lockedAt DateTime?
+  lockedBy String?
+
+  publishedAt DateTime?
+  lastError   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, availableAt])
+  @@index([status, lockedAt])
 }
