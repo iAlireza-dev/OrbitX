@@ -14,6 +14,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { AllocationModule } from './allocation/allocation.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OutboxModule } from './outbox/outbox.module.js';
+import { BillingModule } from './billing/billing.module.js';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { OutboxModule } from './outbox/outbox.module.js';
     AllocationModule,
     ScheduleModule.forRoot(),
     OutboxModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

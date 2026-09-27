@@ -75,6 +75,11 @@ enum OutboxEventType {
   USAGE_EVENT_RECEIVED
 }
 
+enum BillingCycleStatus {
+  ACTIVE
+  CLOSED
+}
+
 model Customer {
   id        String         @id @default(cuid())
   firstName String
@@ -122,9 +127,11 @@ model Subscription {
   sim        Sim?
   allowances Allowance[]
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  usageEvents UsageEvent[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  usageEvents   UsageEvent[]
+  billingCycles BillingCycle[]
+  nextBillingAt DateTime?
 
   @@index([customerId])
   @@index([planId])
@@ -167,12 +174,15 @@ model Allowance {
 
   status AllowanceStatus @default(ACTIVE)
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  allocations Allocation[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  allocations    Allocation[]
+  billingCycle   BillingCycle? @relation(fields: [billingCycleId], references: [id])
+  billingCycleId String?
 
   @@index([subscriptionId])
   @@index([subscriptionId, usageType, status, priority])
+  @@index([billingCycleId])
 }
 
 model UsageEvent {
@@ -257,4 +267,22 @@ model PlanAllowanceTemplate {
 
   @@unique([planId, usageType])
   @@index([planId])
+}
+
+model BillingCycle {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+
+  startsAt DateTime
+  endsAt   DateTime
+  status   BillingCycleStatus @default(ACTIVE)
+
+  allowances Allowance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subscriptionId, startsAt])
+  @@index([subscriptionId, status])
 }

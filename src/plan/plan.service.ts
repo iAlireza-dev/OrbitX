@@ -8,13 +8,29 @@ export class PlanService {
 
   async create(dto: CreatePlanDto) {
     return this.prisma.plan.create({
-      data: dto,
+      data: {
+        name: dto.name,
+        description: dto.description,
+        monthlyPrice: dto.monthlyPrice,
+
+        allowanceTemplates: {
+          create: dto.allowanceTemplates.map((template) => ({
+            usageType: template.usageType,
+            amount: template.amount,
+            priority: template.priority,
+          })),
+        },
+      },
+      include: { allowanceTemplates: true },
     });
   }
 
   async findById(id: string) {
     const plan = await this.prisma.plan.findUnique({
       where: { id },
+      include: {
+        allowanceTemplates: true,
+      },
     });
 
     if (!plan) {

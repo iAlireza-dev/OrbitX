@@ -9,10 +9,14 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateSimDto } from './dto/create-sim.dto.js';
 import { ProvisionSimDto } from './dto/provision-sim.dto.js';
 import { SimStatus, SubscriptionStatus } from '../generated/prisma/enums.js';
+import { BillingService } from '../billing/billing.service.js';
 
 @Injectable()
 export class SimService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly billingService: BillingService,
+  ) {}
 
   async create(dto: CreateSimDto) {
     return this.prisma.sim.create({
@@ -64,6 +68,9 @@ export class SimService {
 
       const activatedAt = new Date();
 
+      const nextBillingAt = new Date(activatedAt);
+      nextBillingAt.setMonth(nextBillingAt.getMonth() + 1);
+
       const simUpdate = await tx.sim.updateMany({
         where: {
           id: simId,
@@ -88,6 +95,7 @@ export class SimService {
         data: {
           status: SubscriptionStatus.ACTIVE,
           activatedAt,
+          nextBillingAt,
         },
       });
 
@@ -96,6 +104,22 @@ export class SimService {
           'Subscription state changed during provisioning',
         );
       }
+
+      const billingCycle = await tx.billingCycle.create({
+        data: {
+          subscriptionId: data.subscriptionId,
+          startsAt: activatedAt,
+          endsAt: nextBillingAt,
+        },
+      });
+
+      await this.billingService.createCycleAllowances(
+        tx,
+        data.subscriptionId,
+        billingCycle.id,
+        activatedAt,
+        nextBillingAt,
+      );
 
       return tx.sim.findUnique({
         where: { id: simId },
