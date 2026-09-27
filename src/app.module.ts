@@ -1,3 +1,5 @@
+import { AuthModule } from './auth/auth.module.js';
+import { UserModule } from './user/user.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { SubscriptionModule } from './subscription/subscription.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -18,6 +20,8 @@ import { BillingModule } from './billing/billing.module.js';
 
 @Module({
   imports: [
+    AuthModule,
+    UserModule,
     RedisModule,
     SubscriptionModule,
     ConfigModule.forRoot({
