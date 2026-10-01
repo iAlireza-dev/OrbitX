@@ -495,7 +495,13 @@ function MetricCard({
   );
 }
 
-function Activity({ title, subtitle }: { title: string; subtitle: string }) {
+function Activity({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle: string;
+}) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-1.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#337bc7]/30 bg-[#0b2c59]">
