@@ -1,3 +1,4 @@
+import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UserModule } from './user/user.module.js';
 import { RedisModule } from './redis/redis.module.js';
@@ -21,6 +22,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    HealthModule,
     AuthModule,
     UserModule,
     RedisModule,
