@@ -17,6 +17,7 @@ import { AllocationModule } from './allocation/allocation.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OutboxModule } from './outbox/outbox.module.js';
 import { BillingModule } from './billing/billing.module.js';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -50,6 +51,14 @@ import { BillingModule } from './billing/billing.module.js';
     ScheduleModule.forRoot(),
     OutboxModule,
     BillingModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60_000,
+          limit: 10,
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

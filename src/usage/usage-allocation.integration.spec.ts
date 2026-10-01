@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SubscriptionService } from '../subscription/subscription.service.js';
-
+import { CustomerService } from '../customer/customer.service.js';
+import { PlanService } from '../plan/plan.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UsageService } from './usage.service.js';
 import { AllocationService } from '../allocation/allocation.service.js';
@@ -25,8 +26,13 @@ describe('Usage allocation integration', () => {
     del: async () => {},
   };
 
+  const customerService = new CustomerService(prisma);
+  const planService = new PlanService(prisma);
+
   const subscriptionService = new SubscriptionService(
     prisma,
+    customerService,
+    planService,
     redisService as any,
   );
 
