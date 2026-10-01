@@ -1,4 +1,8 @@
 export default function Home() {
+  const newLocal = `
+                linear-gradient(to right, white 1px, transparent 1px),
+                linear-gradient(to bottom, white 1px, transparent 1px)
+              `;
   return (
     <main className="overflow-hidden bg-[#030711] text-white selection:bg-[#1677ff] selection:text-white">
       {/* HERO */}
@@ -12,10 +16,7 @@ export default function Home() {
           <div
             className="absolute inset-0 opacity-[0.045]"
             style={{
-              backgroundImage: `
-                linear-gradient(to right, white 1px, transparent 1px),
-                linear-gradient(to bottom, white 1px, transparent 1px)
-              `,
+              backgroundImage: newLocal,
               backgroundSize: "64px 64px",
             }}
           />
